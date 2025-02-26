@@ -48,8 +48,8 @@ A sleek, modern, lightweight web application for writers to create, organize, an
 
 1. **Clone or download this repository:**
 ```bash
-git clone https://github.com/yourusername/novel-writer.git
-cd novel-writer
+git clone https://github.com/Luigichopper/SimpleWriter
+cd simple-writer
 ```
 
 2. **Create and activate a virtual environment (recommended):**
@@ -76,6 +76,11 @@ python main.py
 
 5. **Access the application:**
 Open your web browser and navigate to: `http://127.0.0.1:5000`
+
+### Alternate Application Running
+**start-app-batch.bat**
+or
+**start-app-shell.sh**
 
 ## Usage Guide
 
