@@ -2,6 +2,9 @@
 
 A sleek, modern, lightweight web application for writers to create, organize, and export novels. Built with Flask, this application offers a distraction-free writing environment with just the right amount of features to enhance your writing process.
 
+![image](https://github.com/user-attachments/assets/e4e0e385-6726-43cb-b39f-640e8fd8c7f0)
+
+
 ## Key Features
 
 ### Book Management
