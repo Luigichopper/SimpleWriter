@@ -240,6 +240,9 @@ def api_delete_chapter(book_id, chapter_id):
 
 @app.route('/api/book/<book_id>/export/<format>')
 def export_book(book_id, format):
+    allowed_formats = {'json', 'txt', 'html', 'pdf'}
+    if format not in allowed_formats:
+        return jsonify({'error': 'Invalid format'}), 400
     book = get_book(book_id)
     if not book:
         return jsonify({'error': 'Book not found'}), 404
@@ -465,4 +468,6 @@ if __name__ == '__main__':
         print("BeautifulSoup installed successfully.")
         from bs4 import BeautifulSoup
 
-    app.run(debug=True)
+    debug_mode = os.getenv('FLASK_DEBUG', '0') == '1'
+
+    app.run(debug=debug_mode)
