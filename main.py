@@ -1,6 +1,5 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for, send_file
 import json
-import os
 import uuid
 from datetime import datetime
 import importlib.util
@@ -247,8 +246,11 @@ def export_book(book_id, format):
     if not book:
         return jsonify({'error': 'Book not found'}), 404
 
+    base_temp_dir = tempfile.gettempdir()
     filename = f"{book['title'].replace(' ', '_')}.{format}"
-    temp_filename = f"temp_{filename}"
+    temp_filename = os.path.normpath(os.path.join(base_temp_dir, f"temp_{filename}"))
+    if not temp_filename.startswith(base_temp_dir):
+        return jsonify({'error': 'Invalid file path'}), 400
 
     try:
         if format == 'json':
