@@ -2,3 +2,4 @@ flask==2.3.3
 werkzeug==2.3.7
 python-dotenv==1.0.0
 beautifulsoup4==4.12.2
+reportlab==4.0.4

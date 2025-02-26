@@ -6,6 +6,9 @@ from datetime import datetime
 import importlib.util
 import sys
 from werkzeug.utils import secure_filename
+import importlib.util
+import tempfile
+import os
 from bs4 import BeautifulSoup
 
 # Create the Flask application
@@ -369,6 +372,82 @@ def activate_extension():
         print(f"Error activating extension: {e}")
         return jsonify({'error': str(e)}), 500
 
+
+@app.route('/api/extensions/pdf-export/generate', methods=['POST'])
+def generate_pdf_export():
+    try:
+        # Get request data
+        options = request.json
+        if not options or 'bookId' not in options:
+            return jsonify({'error': 'Invalid request data. Book ID is required.'}), 400
+
+        book_id = options.get('bookId')
+
+        # Get the book data
+        book = get_book(book_id)
+        if not book:
+            return jsonify({'error': 'Book not found'}), 404
+
+        # Load PDF export extension
+        try:
+            # Check if pdf_export.py exists
+            pdf_extension_path = os.path.join('extensions', 'pdf-export-extension.py')
+            if not os.path.exists(pdf_extension_path):
+                return jsonify({'error': 'PDF export extension not found. Please make sure pdf_export.py is in the extensions directory.'}), 404
+
+            # Load the extension module
+            spec = importlib.util.spec_from_file_location('pdf_export', pdf_extension_path)
+            pdf_extension = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(pdf_extension)
+
+            # Check if generate_pdf function exists
+            if not hasattr(pdf_extension, 'generate_pdf'):
+                return jsonify({'error': 'PDF extension is missing the generate_pdf function'}), 500
+
+        except Exception as e:
+            print(f"Error loading PDF extension: {e}")
+            return jsonify({'error': f'Failed to load PDF extension: {str(e)}'}), 500
+
+        # Generate the PDF
+        try:
+            pdf_path = pdf_extension.generate_pdf(book, options)
+
+            if not pdf_path or not os.path.exists(pdf_path):
+                return jsonify({'error': 'Failed to generate PDF file'}), 500
+
+            # Return the PDF file
+            response = send_file(
+                pdf_path,
+                as_attachment=True,
+                download_name=f"{book['title'].replace(' ', '_')}.pdf",
+                mimetype='application/pdf'
+            )
+
+            # Clean up the temporary file after sending
+            @response.call_on_close
+            def cleanup():
+                try:
+                    if os.path.exists(pdf_path):
+                        os.remove(pdf_path)
+                except Exception as e:
+                    print(f"Error cleaning up temporary PDF: {e}")
+
+            return response
+
+        except ImportError as e:
+            # Handle missing dependencies specifically
+            print(f"PDF generation dependency error: {e}")
+            return jsonify({'error': f'Missing dependency: {str(e)}. Please install required packages: pip install reportlab beautifulsoup4'}), 500
+
+        except Exception as e:
+            # Handle other generation errors
+            print(f"PDF generation error: {e}")
+            return jsonify({'error': f'Error during PDF generation: {str(e)}'}), 500
+
+    except Exception as e:
+        # Handle all other errors
+        print(f"Unexpected error in PDF generation endpoint: {e}")
+        return jsonify({'error': f'Unexpected error: {str(e)}'}), 500
 
 if __name__ == '__main__':
     print("Starting Flask application...")
