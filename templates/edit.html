@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ book.title }} - Novel Writer</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4a6fa5;
+            --secondary-color: #6c8fb3;
+            --text-color: #333;
+            --bg-color: #f8f9fa;
+            --card-bg: #fff;
+            --border-color: #e0e0e0;
+            --sidebar-width: 250px;
+            --toolbar-height: 50px;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 100;
+        }
+
+        .logo-link {
+            text-decoration: none;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        .btn:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 4px 8px;
+            font-size: 12px;
+        }
+
+        .toolbar {
+            display: flex;
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 5px 10px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .toolbar-button {
+            background: none;
+            border: none;
+            border-radius: 4px;
+            padding: 5px 10px;
+            margin-right: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .toolbar-button:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        .toolbar-separator {
+            border-left: 1px solid var(--border-color);
+            height: 20px;
+            margin: 0 10px;
+        }
+
+        .editor-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--card-bg);
+            border-right: 1px solid var(--border-color);
+            overflow-y: auto;
+            height: 100%;
+        }
+
+        .chapter-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .chapter-item {
+            padding: 10px 15px;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chapter-item:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        .chapter-item.active {
+            background-color: rgba(74, 111, 165, 0.1);
+            border-left: 3px solid var(--primary-color);
+            font-weight: bold;
+        }
+
+        .chapter-title {
+            flex-grow: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .chapter-actions {
+            display: flex;
+            align-items: center;
+            visibility: hidden;
+        }
+
+        .chapter-item:hover .chapter-actions {
+            visibility: visible;
+        }
+
+        .chapter-action {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #666;
+            font-size: 12px;
+            padding: 2px;
+        }
+
+        .chapter-action:hover {
+            color: var(--primary-color);
+        }
+
+        .add-chapter {
+            padding: 10px 15px;
+            background-color: rgba(74, 111, 165, 0.05);
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .add-chapter:hover {
+            background-color: rgba(74, 111, 165, 0.1);
+        }
+
+        .editor {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .editor-area {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .content-editable {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            min-height: 100%;
+            outline: none;
+            font-size: var(--font-size, 16px);
+            line-height: var(--line-spacing, 1.5);
+            white-space: pre-wrap;
+            padding-bottom: 100px;
+        }
+
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            background-color: var(--card-bg);
+            min-width: 160px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            z-index: 1;
+            border-radius: 4px;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .dropdown-item {
+            padding: 10px 15px;
+            text-decoration: none;
+            color: var(--text-color);
+            display: block;
+            transition: background-color 0.3s;
+        }
+
+        .dropdown-item:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        .dropdown-separator {
+            height: 1px;
+            background-color: var(--border-color);
+            margin: 5px 0;
+        }
+        
+        /* Modal styles - same as in index.html */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 400px;
+            max-width: 90%;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .close {
+            cursor: pointer;
+            font-size: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="/" class="logo-link">
+            <div class="logo">Novel Writer</div>
+        </a>
+        <div>
+            <button class="btn btn-outline" id="settingsBtn">
+                <i class="fas fa-cog"></i> Settings
+            </button>
+            <div class="dropdown">
+                <button class="btn btn-outline">
+                    <i class="fas fa-download"></i> Export
+                </button>
+                <div class="dropdown-content">
+                    <a href="/api/book/{{ book.id }}/export/json" class="dropdown-item">Export as JSON</a>
+                    <a href="/api/book/{{ book.id }}/export/txt" class="dropdown-item">Export as Text</a>
+                    <a href="/api/book/{{ book.id }}/export/html" class="dropdown-item">Export as HTML</a>
+                </div>
+            </div>
+            <button class="btn" id="saveBtn">
+                <i class="fas fa-save"></i> Save
+            </button>
+        </div>
+    </header>
+
+    <div class="editor-container">
+        <div class="sidebar">
+            <ul class="chapter-list" id="chapterList">
+                {% for chapter in book.chapters|sort(attribute='order') %}
+                <li class="chapter-item" data-id="{{ chapter.id }}">
+                    <div class="chapter-title">{{ chapter.title }}</div>
+                    <div class="chapter-actions">
+                        <button class="chapter-action rename-chapter">
+                            <i class="fas fa-pen"></i>
+                        </button>
+                        <button class="chapter-action delete-chapter">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+            <div class="add-chapter" id="addChapter">
+                <i class="fas fa-plus"></i> Add Chapter
+            </div>
+        </div>
+
+        <div class="editor">
+            <div class="toolbar">
+                <button class="toolbar-button" data-command="bold" title="Bold">
+                    <i class="fas fa-bold"></i>
+                </button>
+                <button class="toolbar-button" data-command="italic" title="Italic">
+                    <i class="fas fa-italic"></i>
+                </button>
+                <button class="toolbar-button" data-command="underline" title="Underline">
+                    <i class="fas fa-underline"></i>
+                </button>
+                <div class="toolbar-separator"></div>
+                <button class="toolbar-button" data-command="insertUnorderedList" title="Bullet List">
+                    <i class="fas fa-list-ul"></i>
+                </button>
+                <button class="toolbar-button" data-command="insertOrderedList" title="Numbered List">
+                    <i class="fas fa-list-ol"></i>
+                </button>
+                <button class="toolbar-button" data-command="formatBlock" data-value="blockquote" title="Quote">
+                    <i class="fas fa-quote-right"></i>
+                </button>
+                <div class="toolbar-separator"></div>
+                <button class="toolbar-button" data-command="removeFormat" title="Clear Formatting">
+                    <i class="fas fa-remove-format"></i>
+                </button>
+            </div>
+            <div class="editor-area" id="editorArea">
+                <div class="content-editable" id="editor" contenteditable="true"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rename Chapter Modal -->
+    <div class="modal" id="renameChapterModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Rename Chapter</div>
+                <span class="close">&times;</span>
+            </div>
+            <form id="renameChapterForm">
+                <div class="form-group">
+                    <label for="chapterTitle">Chapter Title</label>
+                    <input type="text" class="form-control" id="chapterTitle" required>
+                    <input type="hidden" id="chapterId">
+                </div>
+                <button type="submit" class="btn">Rename</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- New Chapter Modal -->
+    <div class="modal" id="newChapterModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">New Chapter</div>
+                <span class="close">&times;</span>
+            </div>
+            <form id="newChapterForm">
+                <div class="form-group">
+                    <label for="newChapterTitle">Chapter Title</label>
+                    <input type="text" class="form-control" id="newChapterTitle" required>
+                </div>
+                <button type="submit" class="btn">Create</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Book Settings Modal -->
+    <div class="modal" id="bookSettingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Book Settings</div>
+                <span class="close">&times;</span>
+            </div>
+            <form id="bookSettingsForm">
+                <div class="form-group">
+                    <label for="bookTitle">Book Title</label>
+                    <input type="text" class="form-control" id="bookTitle" value="{{ book.title }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="fontSize">Font Size</label>
+                    <select class="form-control" id="fontSize">
+                        <option value="12" {% if book.settings.font_size == 12 %}selected{% endif %}>12px</option>
+                        <option value="14" {% if book.settings.font_size == 14 %}selected{% endif %}>14px</option>
+                        <option value="16" {% if book.settings.font_size == 16 %}selected{% endif %}>16px</option>
+                        <option value="18" {% if book.settings.font_size == 18 %}selected{% endif %}>18px</option>
+                        <option value="20" {% if book.settings.font_size == 20 %}selected{% endif %}>20px</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="lineSpacing">Line Spacing</label>
+                    <select class="form-control" id="lineSpacing">
+                        <option value="1" {% if book.settings.line_spacing == 1 %}selected{% endif %}>Single</option>
+                        <option value="1.25" {% if book.settings.line_spacing == 1.25 %}selected{% endif %}>1.25</option>
+                        <option value="1.5" {% if book.settings.line_spacing == 1.5 %}selected{% endif %}>1.5</option>
+                        <option value="2" {% if book.settings.line_spacing == 2 %}selected{% endif %}>Double</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn">Save Settings</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Book data
+        let book = {{ book|tojson }};
+        let currentChapterId = null;
+        let isDirty = false;
+
+        // DOM elements
+        const editorElement = document.getElementById('editor');
+        const saveButton = document.getElementById('saveBtn');
+        const chapterList = document.getElementById('chapterList');
+        const addChapterButton = document.getElementById('addChapter');
+        const settingsButton = document.getElementById('settingsBtn');
+
+        // Initialize editor
+        function loadEditor() {
+            // Load the first chapter or the last active chapter if available
+            const chapters = book.chapters.sort((a, b) => a.order - b.order);
+            if (chapters.length > 0) {
+                const firstChapter = chapters[0];
+                loadChapter(firstChapter.id);
+            }
+
+            // Apply book settings
+            applyBookSettings();
+        }
+
+        // Apply book settings to the editor
+        function applyBookSettings() {
+            const { font_size, line_spacing } = book.settings;
+            document.documentElement.style.setProperty('--font-size', `${font_size}px`);
+            document.documentElement.style.setProperty('--line-spacing', line_spacing);
+        }
+
+        // Load a chapter into the editor
+        function loadChapter(chapterId) {
+            // Save current chapter if there is one
+            if (currentChapterId) {
+                saveCurrentChapter();
+            }
+
+            // Find the chapter
+            const chapter = book.chapters.find(c => c.id === chapterId);
+            if (!chapter) return;
+
+            // Update UI
+            currentChapterId = chapterId;
+            editorElement.innerHTML = chapter.content;
+            
+            // Update chapter list
+            document.querySelectorAll('.chapter-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector(`.chapter-item[data-id="${chapterId}"]`).classList.add('active');
+            
+            // Reset dirty flag
+            isDirty = false;
+        }
+
+        // Save the current chapter content
+        function saveCurrentChapter() {
+            if (!currentChapterId) return;
+            
+            const chapter = book.chapters.find(c => c.id === currentChapterId);
+            if (chapter) {
+                chapter.content = editorElement.innerHTML;
+            }
+        }
+
+        // Save the entire book
+        function saveBook() {
+            // Save current chapter first
+            saveCurrentChapter();
+            
+            // Update last modified
+            book.last_modified = new Date().toISOString();
+            
+            // Send to server
+            fetch(`/api/book/${book.id}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(book)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('Book saved successfully');
+                    isDirty = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error saving book:', error);
+                alert('Failed to save book. Please try again.');
+            });
+        }
+
+// Create a new chapter
+function createChapter(title) {
+    // Show a loading indicator or message if desired
+
+    fetch(`/api/book/${book.id}/chapter/new`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ title })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(chapter => {
+        // Add to local book data
+        book.chapters.push(chapter);
+
+        // Add to UI
+        const chapterItem = document.createElement('li');
+        chapterItem.className = 'chapter-item';
+        chapterItem.setAttribute('data-id', chapter.id);
+        chapterItem.innerHTML = `
+            <div class="chapter-title">${chapter.title}</div>
+            <div class="chapter-actions">
+                <button class="chapter-action rename-chapter">
+                    <i class="fas fa-pen"></i>
+                </button>
+                <button class="chapter-action delete-chapter">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        `;
+
+        // Insert before the "Add Chapter" button
+        const addChapterButton = document.getElementById('addChapter');
+        const chapterList = document.getElementById('chapterList');
+        chapterList.insertBefore(chapterItem, null); // Append to the end of the list
+
+        // Add event listeners to new chapter
+        addChapterEventListeners(chapterItem);
+
+        // Load the new chapter
+        loadChapter(chapter.id);
+    })
+    .catch(error => {
+        console.error('Error creating chapter:', error);
+        alert('There was an issue creating the chapter. Please try again or refresh the page.');
+    });
+}
+
+        // Delete a chapter
+        function deleteChapter(chapterId) {
+            if (book.chapters.length <= 1) {
+                alert('Cannot delete the only chapter. Create another chapter first.');
+                return;
+            }
+
+            if (confirm('Are you sure you want to delete this chapter? This cannot be undone.')) {
+                fetch(`/api/book/${book.id}/chapter/${chapterId}`, {
+                    method: 'DELETE'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Remove from local book data
+                        book.chapters = book.chapters.filter(c => c.id !== chapterId);
+
+                        // Remove from UI
+                        const chapterItem = document.querySelector(`.chapter-item[data-id="${chapterId}"]`);
+                        chapterItem.remove();
+
+                        // If we deleted the current chapter, load another one
+                        if (currentChapterId === chapterId) {
+                            if (book.chapters.length > 0) {
+                                loadChapter(book.chapters[0].id);
+                            } else {
+                                currentChapterId = null;
+                                editorElement.innerHTML = '';
+                            }
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error deleting chapter:', error);
+                    alert('Failed to delete chapter. Please try again.');
+                });
+            }
+        }
+
+        // Rename a chapter
+        function renameChapter(chapterId, newTitle) {
+            // Find the chapter
+            const chapter = book.chapters.find(c => c.id === chapterId);
+            if (!chapter) return;
+
+            // Update title
+            chapter.title = newTitle;
+
+            // Update UI
+            const chapterItem = document.querySelector(`.chapter-item[data-id="${chapterId}"]`);
+            chapterItem.querySelector('.chapter-title').textContent = newTitle;
+
+            // Save the book
+            saveBook();
+        }
+
+        // Format text in the editor
+        function formatText(command, value = null) {
+            document.execCommand(command, false, value);
+            editorElement.focus();
+            isDirty = true;
+        }
+
+        // Modal handling
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'flex';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // Add event listeners to chapter items
+        function addChapterEventListeners(chapterItem) {
+            // Chapter click
+            chapterItem.addEventListener('click', function(e) {
+                if (!e.target.closest('.chapter-actions')) {
+                    const chapterId = this.getAttribute('data-id');
+                    loadChapter(chapterId);
+                }
+            });
+
+            // Rename button
+            chapterItem.querySelector('.rename-chapter').addEventListener('click', function(e) {
+                e.stopPropagation();
+                const chapterId = chapterItem.getAttribute('data-id');
+                const chapter = book.chapters.find(c => c.id === chapterId);
+
+                if (chapter) {
+                    document.getElementById('chapterId').value = chapterId;
+                    document.getElementById('chapterTitle').value = chapter.title;
+                    openModal('renameChapterModal');
+                }
+            });
+
+            // Delete button
+            chapterItem.querySelector('.delete-chapter').addEventListener('click', function(e) {
+                e.stopPropagation();
+                const chapterId = chapterItem.getAttribute('data-id');
+                deleteChapter(chapterId);
+            });
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize the editor
+            loadEditor();
+
+            // Add event listeners to existing chapters
+            document.querySelectorAll('.chapter-item').forEach(addChapterEventListeners);
+
+            // Save button
+            saveButton.addEventListener('click', function() {
+                saveBook();
+            });
+
+            // Editor changes
+            editorElement.addEventListener('input', function() {
+                isDirty = true;
+            });
+
+            // Add chapter button
+            addChapterButton.addEventListener('click', function() {
+                openModal('newChapterModal');
+            });
+
+            // Settings button
+            settingsButton.addEventListener('click', function() {
+                openModal('bookSettingsModal');
+            });
+
+            // Toolbar buttons
+            document.querySelectorAll('.toolbar-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const command = this.getAttribute('data-command');
+                    const value = this.getAttribute('data-value');
+                    formatText(command, value);
+                });
+            });
+
+            // Rename chapter form
+            document.getElementById('renameChapterForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const chapterId = document.getElementById('chapterId').value;
+                const newTitle = document.getElementById('chapterTitle').value;
+                renameChapter(chapterId, newTitle);
+                closeModal('renameChapterModal');
+            });
+
+            // New chapter form
+            document.getElementById('newChapterForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const title = document.getElementById('newChapterTitle').value;
+                createChapter(title);
+                closeModal('newChapterModal');
+                document.getElementById('newChapterTitle').value = '';
+            });
+
+            // Book settings form
+            document.getElementById('bookSettingsForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                // Update book title
+                book.title = document.getElementById('bookTitle').value;
+
+                // Update settings
+                book.settings.font_size = parseInt(document.getElementById('fontSize').value);
+                book.settings.line_spacing = parseFloat(document.getElementById('lineSpacing').value);
+
+                // Apply settings
+                applyBookSettings();
+
+                // Save book
+                saveBook();
+
+                closeModal('bookSettingsModal');
+            });
+
+            // Close modal buttons
+            document.querySelectorAll('.close').forEach(closeBtn => {
+                closeBtn.addEventListener('click', function() {
+                    const modal = this.closest('.modal');
+                    modal.style.display = 'none';
+                });
+            });
+
+            // Close modals when clicking outside
+            window.addEventListener('click', function(event) {
+                if (event.target.classList.contains('modal')) {
+                    event.target.style.display = 'none';
+                }
+            });
+
+            // Warn before leaving if unsaved changes
+            window.addEventListener('beforeunload', function(e) {
+                if (isDirty) {
+                    const message = 'You have unsaved changes. Are you sure you want to leave?';
+                    e.returnValue = message;
+                    return message;
+                }
+            });
+
+            // Auto-save every 30 seconds
+            setInterval(function() {
+                if (isDirty) {
+                    saveBook();
+                }
+            }, 30000);
+        });
+    </script>
+</body>
+</html>
