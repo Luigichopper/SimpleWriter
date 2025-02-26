@@ -306,32 +306,71 @@
             border-radius: 4px;
             font-size: 14px;
         }
+        .left-header {
+    display: flex;
+    align-items: center;
+}
+
+.header-links {
+    display: flex;
+    margin-left: 20px;
+}
+
+.header-link {
+    margin-right: 15px;
+    text-decoration: none;
+    color: var(--text-color);
+    font-weight: 500;
+    padding: 5px 0;
+    position: relative;
+    transition: color 0.3s;
+}
+
+.header-link:hover {
+    color: var(--primary-color);
+}
+
+.header-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: var(--primary-color);
+}
     </style>
 </head>
 <body>
     <header>
+    <div class="left-header">
         <a href="/" class="logo-link">
             <div class="logo">Novel Writer</div>
         </a>
-        <div>
-            <button class="btn btn-outline" id="settingsBtn">
-                <i class="fas fa-cog"></i> Settings
-            </button>
-            <div class="dropdown">
-                <button class="btn btn-outline">
-                    <i class="fas fa-download"></i> Export
-                </button>
-                <div class="dropdown-content">
-                    <a href="/api/book/{{ book.id }}/export/json" class="dropdown-item">Export as JSON</a>
-                    <a href="/api/book/{{ book.id }}/export/txt" class="dropdown-item">Export as Text</a>
-                    <a href="/api/book/{{ book.id }}/export/html" class="dropdown-item">Export as HTML</a>
-                </div>
-            </div>
-            <button class="btn" id="saveBtn">
-                <i class="fas fa-save"></i> Save
-            </button>
+        <div class="header-links">
+            <a href="/book/{{ book.id }}" class="header-link active">Editor</a>
+            <a href="/book/{{ book.id }}/planning" class="header-link">Planning</a>
         </div>
-    </header>
+    </div>
+    <div>
+        <button class="btn btn-outline" id="settingsBtn">
+            <i class="fas fa-cog"></i> Settings
+        </button>
+        <div class="dropdown">
+            <button class="btn btn-outline">
+                <i class="fas fa-download"></i> Export
+            </button>
+            <div class="dropdown-content">
+                <a href="/api/book/{{ book.id }}/export/json" class="dropdown-item">Export as JSON</a>
+                <a href="/api/book/{{ book.id }}/export/txt" class="dropdown-item">Export as Text</a>
+                <a href="/api/book/{{ book.id }}/export/html" class="dropdown-item">Export as HTML</a>
+            </div>
+        </div>
+        <button class="btn" id="saveBtn">
+            <i class="fas fa-save"></i> Save
+        </button>
+    </div>
+</header>
 
     <div class="editor-container">
         <div class="sidebar">

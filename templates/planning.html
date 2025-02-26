@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ book.title }} - Planning | Novel Writer</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4a6fa5;
+            --secondary-color: #6c8fb3;
+            --text-color: #333;
+            --bg-color: #f8f9fa;
+            --card-bg: #fff;
+            --border-color: #e0e0e0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 100;
+        }
+
+        .logo-link {
+            text-decoration: none;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+            margin-left: 5px;
+        }
+
+        .btn:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .header-links {
+            display: flex;
+        }
+
+        .header-link {
+            margin-right: 15px;
+            text-decoration: none;
+            color: var(--text-color);
+            font-weight: 500;
+            padding: 5px 0;
+            position: relative;
+            transition: color 0.3s;
+        }
+
+        .header-link:hover {
+            color: var(--primary-color);
+        }
+
+        .header-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: var(--primary-color);
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .planning-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .planning-card {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .planning-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .planning-card-title {
+            font-weight: bold;
+            font-size: 16px;
+            color: var(--primary-color);
+        }
+
+        .planning-card-actions {
+            display: flex;
+        }
+
+        .card-action {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #666;
+            font-size: 14px;
+            margin-left: 5px;
+        }
+
+        .card-action:hover {
+            color: var(--primary-color);
+        }
+
+        .planning-card-content {
+            flex: 1;
+        }
+
+        .textarea-container {
+            height: 100%;
+            width: 100%;
+        }
+
+        .planning-textarea {
+            width: 100%;
+            height: 200px;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            resize: vertical;
+            font-family: inherit;
+            line-height: 1.5;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        .character-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            grid-gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .character-card {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .character-image {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--secondary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 10px;
+            align-self: center;
+        }
+
+        .character-name {
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .character-role {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .character-actions {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+        }
+
+        .timeline {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .timeline-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .timeline-title {
+            font-weight: bold;
+            font-size: 18px;
+            color: var(--primary-color);
+        }
+
+        .timeline-events {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .timeline-events::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: var(--secondary-color);
+        }
+
+        .timeline-event {
+            position: relative;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .timeline-event:last-child {
+            border-bottom: none;
+        }
+
+        .timeline-event::before {
+            content: '';
+            position: absolute;
+            left: -34px;
+            top: 0;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+        }
+
+        .timeline-event-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .timeline-event-title {
+            font-weight: bold;
+        }
+
+        .timeline-event-chapter {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .timeline-event-description {
+            line-height: 1.5;
+        }
+
+        .section-title {
+            margin: 30px 0 15px;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title h2 {
+            margin: 0;
+            font-size: 20px;
+        }
+
+        .section-title .btn {
+            margin-left: 15px;
+        }
+
+        .section-divider {
+            height: 1px;
+            background-color: var(--border-color);
+            margin: 20px 0;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            width: 400px;
+            max-width: 90%;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .close {
+            cursor: pointer;
+            font-size: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 14px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        textarea.form-control {
+            min-height: 100px;
+            resize: vertical;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="left-header">
+            <a href="/" class="logo-link">
+                <div class="logo">Novel Writer</div>
+            </a>
+            <div class="header-links">
+                <a href="/book/{{ book.id }}" class="header-link">Editor</a>
+                <a href="/book/{{ book.id }}/planning" class="header-link active">Planning</a>
+            </div>
+        </div>
+        <div>
+            <button class="btn btn-outline" id="settingsBtn">
+                <i class="fas fa-cog"></i> Settings
+            </button>
+            <button class="btn" id="saveBtn">
+                <i class="fas fa-save"></i> Save
+            </button>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="section-title">
+            <h2>Notes</h2>
+            <button class="btn btn-outline" id="addNoteBtn">
+                <i class="fas fa-plus"></i> Add Note
+            </button>
+        </div>
+
+        <div class="planning-grid" id="notesGrid">
+            <!-- Notes will be generated here -->
+            {% if book.planning and book.planning.notes %}
+                {% for note in book.planning.notes %}
+                <div class="planning-card" data-id="{{ note.id }}">
+                    <div class="planning-card-header">
+                        <div class="planning-card-title">{{ note.title }}</div>
+                        <div class="planning-card-actions">
+                            <button class="card-action edit-note">
+                                <i class="fas fa-pen"></i>
+                            </button>
+                            <button class="card-action delete-note">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="planning-card-content">
+                        <div class="textarea-container">
+                            <textarea class="planning-textarea note-content">{{ note.content }}</textarea>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        <div class="section-divider"></div>
+
+        <div class="section-title">
+            <h2>Characters</h2>
+            <button class="btn btn-outline" id="addCharacterBtn">
+                <i class="fas fa-plus"></i> Add Character
+            </button>
+        </div>
+
+        <div class="character-grid" id="charactersGrid">
+            <!-- Characters will be generated here -->
+            {% if book.planning and book.planning.characters %}
+                {% for character in book.planning.characters %}
+                <div class="character-card" data-id="{{ character.id }}">
+                    <div class="character-actions">
+                        <button class="card-action edit-character">
+                            <i class="fas fa-pen"></i>
+                        </button>
+                        <button class="card-action delete-character">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                    <div class="character-image">
+                        {{ character.name[0] }}
+                    </div>
+                    <div class="character-name">{{ character.name }}</div>
+                    <div class="character-role">{{ character.role }}</div>
+                    <div class="character-description">{{ character.description }}</div>
+                </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        <div class="section-divider"></div>
+
+        <div class="section-title">
+            <h2>Timeline</h2>
+            <button class="btn btn-outline" id="addEventBtn">
+                <i class="fas fa-plus"></i> Add Event
+            </button>
+        </div>
+
+        <div class="timeline">
+            <div class="timeline-events" id="timelineEvents">
+                <!-- Timeline events will be generated here -->
+                {% if book.planning and book.planning.timeline %}
+                    {% for event in book.planning.timeline|sort(attribute='order') %}
+                    <div class="timeline-event" data-id="{{ event.id }}">
+                        <div class="timeline-event-header">
+                            <div class="timeline-event-title">{{ event.title }}</div>
+                            <div class="timeline-event-chapter">Chapter: {{ event.chapter }}</div>
+                        </div>
+                        <div class="timeline-event-description">{{ event.description }}</div>
+                        <div class="timeline-event-actions" style="margin-top: 10px; text-align: right;">
+                            <button class="card-action edit-event">
+                                <i class="fas fa-pen"></i> Edit
+                            </button>
+                            <button class="card-action delete-event">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Note Modal -->
+    <div class="modal" id="noteModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="noteModalTitle">Add Note</div>
+                <span class="close">&times;</span>
+            </div>
+            <form id="noteForm">
+                <input type="hidden" id="noteId">
+                <div class="form-group">
+                    <label for="noteTitle" class="form-label">Title</label>
+                    <input type="text" class="form-control" id="noteTitle" required>
+                </div>
+                <div class="form-group">
+                    <label for="noteContent" class="form-label">Content</label>
+                    <textarea class="form-control" id="noteContent"></textarea>
+                </div>
+                <button type="submit" class="btn">Save</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Character Modal -->
+    <div class="modal" id="characterModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="characterModalTitle">Add Character</div>
+                <span class="close">&times;</span>
+            </div>
+            <form id="characterForm">
+                <input type="hidden" id="characterId">
+                <div class="form-group">
+                    <label for="characterName" class="form-label">Name</label>
+                    <input type="text" class="form-control" id="characterName" required>
+                </div>
+                <div class="form-group">
+                    <label for="characterRole" class="form-label">Role</label>
+                    <input type="text" class="form-control" id="characterRole" placeholder="Protagonist, Mentor, Villain, etc.">
+                </div>
+                <div class="form-group">
+                    <label for="characterDescription" class="form-label">Description</label>
+                    <textarea class="form-control" id="characterDescription"></textarea>
+                </div>
+                <button type="submit" class="btn">Save</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Timeline Event Modal -->
+    <div class="modal" id="eventModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="eventModalTitle">Add Timeline Event</div>
+                <span class="close">&times;</span>
+            </div>
+            <form id="eventForm">
+                <input type="hidden" id="eventId">
+                <div class="form-group">
+                    <label for="eventTitle" class="form-label">Event Title</label>
+                    <input type="text" class="form-control" id="eventTitle" required>
+                </div>
+                <div class="form-group">
+                    <label for="eventChapter" class="form-label">Chapter</label>
+                    <select class="form-control" id="eventChapter">
+                        <option value="">Select a chapter</option>
+                        {% for chapter in book.chapters|sort(attribute='order') %}
+                        <option value="{{ chapter.title }}">{{ chapter.title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="eventDescription" class="form-label">Description</label>
+                    <textarea class="form-control" id="eventDescription"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="eventOrder" class="form-label">Order</label>
+                    <input type="number" class="form-control" id="eventOrder" min="1" value="1">
+                </div>
+                <button type="submit" class="btn">Save</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Book data
+        let book = {{ book|tojson }};
+        let isDirty = false;
+
+        // Initialize planning data if it doesn't exist
+        if (!book.planning) {
+            book.planning = {
+                notes: [],
+                characters: [],
+                timeline: []
+            };
+        }
+
+        // DOM Elements
+        const saveButton = document.getElementById('saveBtn');
+        const addNoteButton = document.getElementById('addNoteBtn');
+        const addCharacterButton = document.getElementById('addCharacterBtn');
+        const addEventButton = document.getElementById('addEventBtn');
+        const notesGrid = document.getElementById('notesGrid');
+        const charactersGrid = document.getElementById('charactersGrid');
+        const timelineEvents = document.getElementById('timelineEvents');
+
+        // Note functions
+        function createNote(title, content) {
+            const noteId = 'note_' + Date.now();
+            const note = {
+                id: noteId,
+                title: title,
+                content: content
+            };
+
+            // Add to data
+            if (!book.planning.notes) {
+                book.planning.notes = [];
+            }
+            book.planning.notes.push(note);
+
+            // Add to UI
+            addNoteToUI(note);
+
+            // Mark as dirty
+            isDirty = true;
+        }
+
+        function updateNote(id, title, content) {
+            // Update in data
+            const note = book.planning.notes.find(n => n.id === id);
+            if (note) {
+                note.title = title;
+                note.content = content;
+
+                // Update in UI
+                const noteCard = document.querySelector(`.planning-card[data-id="${id}"]`);
+                if (noteCard) {
+                    noteCard.querySelector('.planning-card-title').textContent = title;
+                    noteCard.querySelector('.note-content').value = content;
+                }
+
+                // Mark as dirty
+                isDirty = true;
+            }
+        }
+
+        function deleteNote(id) {
+            if (confirm('Are you sure you want to delete this note?')) {
+                // Remove from data
+                book.planning.notes = book.planning.notes.filter(n => n.id !== id);
+
+                // Remove from UI
+                const noteCard = document.querySelector(`.planning-card[data-id="${id}"]`);
+                if (noteCard) {
+                    noteCard.remove();
+                }
+
+                // Mark as dirty
+                isDirty = true;
+            }
+        }
+
+        function addNoteToUI(note) {
+            const noteCard = document.createElement('div');
+            noteCard.className = 'planning-card';
+            noteCard.setAttribute('data-id', note.id);
+
+            noteCard.innerHTML = `
+                <div class="planning-card-header">
+                    <div class="planning-card-title">${note.title}</div>
+                    <div class="planning-card-actions">
+                        <button class="card-action edit-note">
+                            <i class="fas fa-pen"></i>
+                        </button>
+                        <button class="card-action delete-note">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="planning-card-content">
+                    <div class="textarea-container">
+                        <textarea class="planning-textarea note-content">${note.content || ''}</textarea>
+                    </div>
+                </div>
+            `;
+
+            notesGrid.appendChild(noteCard);
+
+            // Add event listeners
+            addNoteEventListeners(noteCard);
+        }
+
+        function addNoteEventListeners(noteCard) {
+            // Content change
+            const textarea = noteCard.querySelector('.note-content');
+            textarea.addEventListener('input', function() {
+                isDirty = true;
+                const noteId = noteCard.getAttribute('data-id');
+                const note = book.planning.notes.find(n => n.id === noteId);
+                if (note) {
+                    note.content = this.value;
+                }
+            });
+
+            // Edit button
+            noteCard.querySelector('.edit-note').addEventListener('click', function() {
+                const noteId = noteCard.getAttribute('data-id');
+                const note = book.planning.notes.find(n => n.id === noteId);
+                if (note) {
+                    document.getElementById('noteModalTitle').textContent = 'Edit Note';
+                    document.getElementById('noteId').value = note.id;
+                    document.getElementById('noteTitle').value = note.title;
+                    document.getElementById('noteContent').value = note.content || '';
+                    openModal('noteModal');
+                }
+            });
+
+            // Delete button
+            noteCard.querySelector('.delete-note').addEventListener('click', function() {
+                const noteId = noteCard.getAttribute('data-id');
+                deleteNote(noteId);
+            });
+        }
+
+        // Character functions
+        function createCharacter(name, role, description) {
+            const characterId = 'char_' + Date.now();
+            const character = {
+                id: characterId,
+                name: name,
+                role: role,
+                description: description
+            };
+
+            // Add to data
+            if (!book.planning.characters) {
+                book.planning.characters = [];
+            }
+            book.planning.characters.push(character);
+
+            // Add to UI
+            addCharacterToUI(character);
+
+            // Mark as dirty
+            isDirty = true;
+        }
+
+        function updateCharacter(id, name, role, description) {
+            // Update in data
+            const character = book.planning.characters.find(c => c.id === id);
+            if (character) {
+                character.name = name;
+                character.role = role;
+                character.description = description;
+
+                // Update in UI
+                const characterCard = document.querySelector(`.character-card[data-id="${id}"]`);
+                if (characterCard) {
+                    characterCard.querySelector('.character-image').textContent = name[0];
+                    characterCard.querySelector('.character-name').textContent = name;
+                    characterCard.querySelector('.character-role').textContent = role;
+                    characterCard.querySelector('.character-description').textContent = description;
+                }
+
+                // Mark as dirty
+                isDirty = true;
+            }
+        }
+
+        function deleteCharacter(id) {
+            if (confirm('Are you sure you want to delete this character?')) {
+                // Remove from data
+                book.planning.characters = book.planning.characters.filter(c => c.id !== id);
+
+                // Remove from UI
+                const characterCard = document.querySelector(`.character-card[data-id="${id}"]`);
+                if (characterCard) {
+                    characterCard.remove();
+                }
+
+                // Mark as dirty
+                isDirty = true;
+            }
+        }
+
+        function addCharacterToUI(character) {
+            const characterCard = document.createElement('div');
+            characterCard.className = 'character-card';
+            characterCard.setAttribute('data-id', character.id);
+
+            characterCard.innerHTML = `
+                <div class="character-actions">
+                    <button class="card-action edit-character">
+                        <i class="fas fa-pen"></i>
+                    </button>
+                    <button class="card-action delete-character">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+                <div class="character-image">
+                    ${character.name[0]}
+                </div>
+                <div class="character-name">${character.name}</div>
+                <div class="character-role">${character.role || ''}</div>
+                <div class="character-description">${character.description || ''}</div>
+            `;
+
+            charactersGrid.appendChild(characterCard);
+
+            // Add event listeners
+            addCharacterEventListeners(characterCard);
+        }
+
+        function addCharacterEventListeners(characterCard) {
+            // Edit button
+            characterCard.querySelector('.edit-character').addEventListener('click', function() {
+                const characterId = characterCard.getAttribute('data-id');
+                const character = book.planning.characters.find(c => c.id === characterId);
+                if (character) {
+                    document.getElementById('characterModalTitle').textContent = 'Edit Character';
+                    document.getElementById('characterId').value = character.id;
+                    document.getElementById('characterName').value = character.name;
+                    document.getElementById('characterRole').value = character.role || '';
+                    document.getElementById('characterDescription').value = character.description || '';
+                    openModal('characterModal');
+                }
+            });
+
+            // Delete button
+            characterCard.querySelector('.delete-character').addEventListener('click', function() {
+                const characterId = characterCard.getAttribute('data-id');
+                deleteCharacter(characterId);
+            });
+        }
+
+        // Timeline functions
+        function createEvent(title, chapter, description, order) {
+            const eventId = 'event_' + Date.now();
+            const event = {
+                id: eventId,
+                title: title,
+                chapter: chapter,
+                description: description,
+                order: parseInt(order) || book.planning.timeline.length + 1
+            };
+
+            // Add to data
+            if (!book.planning.timeline) {
+                book.planning.timeline = [];
+            }
+            book.planning.timeline.push(event);
+
+            // Sort timeline
+            book.planning.timeline.sort((a, b) => a.order - b.order);
+
+            // Rebuild UI
+            rebuildTimelineUI();
+
+            // Mark as dirty
+            isDirty = true;
+        }
+
+        function updateEvent(id, title, chapter, description, order) {
+            // Update in data
+            const event = book.planning.timeline.find(e => e.id === id);
+            if (event) {
+                event.title = title;
+                event.chapter = chapter;
+                event.description = description;
+                event.order = parseInt(order) || event.order;
+
+                // Sort timeline
+                book.planning.timeline.sort((a, b) => a.order - b.order);
+
+                // Rebuild UI
+                rebuildTimelineUI();
+
+                // Mark as dirty
+                isDirty = true;
+            }
+        }
+
+        function deleteEvent(id) {
+            if (confirm('Are you sure you want to delete this event?')) {
+                // Remove from data
+                book.planning.timeline = book.planning.timeline.filter(e => e.id !== id);
+
+                // Rebuild UI
+                rebuildTimelineUI();
+
+                // Mark as dirty
+                isDirty = true;
+            }
+        }
+
+        function rebuildTimelineUI() {
+            // Clear the timeline
+            timelineEvents.innerHTML = '';
+
+            // Add sorted events
+            if (book.planning.timeline && book.planning.timeline.length > 0) {
+                // Sort by order
+                const sortedEvents = [...book.planning.timeline].sort((a, b) => a.order - b.order);
+
+                // Add to UI
+                sortedEvents.forEach(event => {
+                    addEventToUI(event);
+                });
+            }
+        }
+
+        function addEventToUI(event) {
+            const eventElement = document.createElement('div');
+            eventElement.className = 'timeline-event';
+            eventElement.setAttribute('data-id', event.id);
+
+            eventElement.innerHTML = `
+                <div class="timeline-event-header">
+                    <div class="timeline-event-title">${event.title}</div>
+                    <div class="timeline-event-chapter">Chapter: ${event.chapter || 'Unassigned'}</div>
+                </div>
+                <div class="timeline-event-description">${event.description || ''}</div>
+                <div class="timeline-event-actions" style="margin-top: 10px; text-align: right;">
+                    <button class="card-action edit-event">
+                        <i class="fas fa-pen"></i> Edit
+                    </button>
+                    <button class="card-action delete-event">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
+            `;
+
+            // Add event listeners
+            addEventEventListeners(eventElement);
+        }
+
+        function addEventEventListeners(eventElement) {
+            // Edit button
+            eventElement.querySelector('.edit-event').addEventListener('click', function() {
+                const eventId = eventElement.getAttribute('data-id');
+                const event = book.planning.timeline.find(e => e.id === eventId);
+                if (event) {
+                    document.getElementById('eventModalTitle').textContent = 'Edit Timeline Event';
+                    document.getElementById('eventId').value = event.id;
+                    document.getElementById('eventTitle').value = event.title;
+                    document.getElementById('eventChapter').value = event.chapter || '';
+                    document.getElementById('eventDescription').value = event.description || '';
+                    document.getElementById('eventOrder').value = event.order || 1;
+                    openModal('eventModal');
+                }
+            });
+
+            // Delete button
+            eventElement.querySelector('.delete-event').addEventListener('click', function() {
+                const eventId = eventElement.getAttribute('data-id');
+                deleteEvent(eventId);
+            });
+        }
+
+        // Save book
+        function saveBook() {
+            fetch(`/api/book/${book.id}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(book)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    console.log('Book saved successfully');
+                    isDirty = false;
+
+                    // Show a success message
+                    alert('Planning saved successfully');
+                }
+            })
+            .catch(error => {
+                console.error('Error saving book:', error);
+                alert('Failed to save planning. Please try again.');
+            });
+        }
+
+        // Modal handling
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'flex';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Ensure planning data exists
+            if (!book.planning) {
+                book.planning = {
+                    notes: [],
+                    characters: [],
+                    timeline: []
+                };
+            }
+
+            // Add event listeners to existing notes
+            if (book.planning.notes) {
+                document.querySelectorAll('.planning-card').forEach(addNoteEventListeners);
+            }
+
+            // Add event listeners to existing characters
+            if (book.planning.characters) {
+                document.querySelectorAll('.character-card').forEach(addCharacterEventListeners);
+            }
+
+            // Add event listeners to existing timeline events
+            if (book.planning.timeline) {
+                document.querySelectorAll('.timeline-event').forEach(addEventEventListeners);
+            }
+
+            // Add Note button
+            addNoteButton.addEventListener('click', function() {
+                document.getElementById('noteModalTitle').textContent = 'Add Note';
+                document.getElementById('noteId').value = '';
+                document.getElementById('noteTitle').value = '';
+                document.getElementById('noteContent').value = '';
+                openModal('noteModal');
+            });
+
+            // Add Character button
+            addCharacterButton.addEventListener('click', function() {
+                document.getElementById('characterModalTitle').textContent = 'Add Character';
+                document.getElementById('characterId').value = '';
+                document.getElementById('characterName').value = '';
+                document.getElementById('characterRole').value = '';
+                document.getElementById('characterDescription').value = '';
+                openModal('characterModal');
+            });
+
+            // Add Event button
+            addEventButton.addEventListener('click', function() {
+                document.getElementById('eventModalTitle').textContent = 'Add Timeline Event';
+                document.getElementById('eventId').value = '';
+                document.getElementById('eventTitle').value = '';
+                document.getElementById('eventChapter').value = '';
+                document.getElementById('eventDescription').value = '';
+                document.getElementById('eventOrder').value = book.planning.timeline ? book.planning.timeline.length + 1 : 1;
+                openModal('eventModal');
+            });
+
+            // Save button
+            saveButton.addEventListener('click', function() {
+                saveBook();
+            });
+
+            // Note form submission
+            document.getElementById('noteForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const noteId = document.getElementById('noteId').value;
+                const title = document.getElementById('noteTitle').value;
+                const content = document.getElementById('noteContent').value;
+
+                if (noteId) {
+                    // Update existing note
+                    updateNote(noteId, title, content);
+                } else {
+                    // Create new note
+                    createNote(title, content);
+                }
+
+                closeModal('noteModal');
+            });
+
+            // Character form submission
+            document.getElementById('characterForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const characterId = document.getElementById('characterId').value;
+                const name = document.getElementById('characterName').value;
+                const role = document.getElementById('characterRole').value;
+                const description = document.getElementById('characterDescription').value;
+
+                if (characterId) {
+                    // Update existing character
+                    updateCharacter(characterId, name, role, description);
+                } else {
+                    // Create new character
+                    createCharacter(name, role, description);
+                }
+
+                closeModal('characterModal');
+            });
+
+            // Event form submission
+            document.getElementById('eventForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const eventId = document.getElementById('eventId').value;
+                const title = document.getElementById('eventTitle').value;
+                const chapter = document.getElementById('eventChapter').value;
+                const description = document.getElementById('eventDescription').value;
+                const order = document.getElementById('eventOrder').value;
+
+                if (eventId) {
+                    // Update existing event
+                    updateEvent(eventId, title, chapter, description, order);
+                } else {
+                    // Create new event
+                    createEvent(title, chapter, description, order);
+                }
+
+                closeModal('eventModal');
+            });
+
+            // Close modal buttons
+            document.querySelectorAll('.close').forEach(closeBtn => {
+                closeBtn.addEventListener('click', function() {
+                    const modal = this.closest('.modal');
+                    modal.style.display = 'none';
+                });
+            });
+
+            // Close modals when clicking outside
+            window.addEventListener('click', function(event) {
+                if (event.target.classList.contains('modal')) {
+                    event.target.style.display = 'none';
+                }
+            });
+
+            // Auto-save every minute
+            setInterval(function() {
+                if (isDirty) {
+                    saveBook();
+                }
+            }, 60000);
+
+            // Warn before leaving if unsaved changes
+            window.addEventListener('beforeunload', function(e) {
+                if (isDirty) {
+                    const message = 'You have unsaved changes. Are you sure you want to leave?';
+                    e.returnValue = message;
+                    return message;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

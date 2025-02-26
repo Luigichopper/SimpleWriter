@@ -1,13 +1,11 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for, send_file
 import json
+import os
 import uuid
 from datetime import datetime
 import importlib.util
 import sys
 from werkzeug.utils import secure_filename
-import importlib.util
-import tempfile
-import os
 from bs4 import BeautifulSoup
 
 # Create the Flask application
@@ -26,8 +24,25 @@ for directory in required_dirs:
         os.makedirs(directory)
         print(f"Created directory: {directory}")
 
-# Store active extensions
-active_extensions = {}
+
+# Store active extensions - persisted to JSON
+def get_active_extensions():
+    if os.path.exists('active_extensions.json'):
+        try:
+            with open('active_extensions.json', 'r') as f:
+                return json.load(f)
+        except:
+            return {}
+    return {}
+
+
+def save_active_extensions(active_ext):
+    with open('active_extensions.json', 'w') as f:
+        json.dump(active_ext, f)
+
+
+# Initialize active extensions
+active_extensions = get_active_extensions()
 
 
 # Initialize extensions
@@ -43,8 +58,6 @@ def load_extensions():
                     spec.loader.exec_module(module)
                     if hasattr(module, 'init_extension'):
                         extensions[module_name] = module
-                        # Auto-activate extensions for demo purposes
-                        active_extensions[module_name] = module
                 except Exception as e:
                     print(f"Failed to load extension {filename}: {e}")
     return extensions
@@ -57,12 +70,17 @@ def apply_extensions(html):
         if active_extensions:
             soup = BeautifulSoup(html, 'html.parser')
 
-            for ext_name, ext_module in active_extensions.items():
-                if hasattr(ext_module, 'inject_editor'):
-                    try:
-                        soup = ext_module.inject_editor(soup)
-                    except Exception as e:
-                        print(f"Error applying extension {ext_name}: {e}")
+            # Get all loaded extensions
+            extensions = load_extensions()
+
+            for ext_name, is_active in active_extensions.items():
+                if is_active and ext_name in extensions:
+                    ext_module = extensions[ext_name]
+                    if hasattr(ext_module, 'inject_editor'):
+                        try:
+                            soup = ext_module.inject_editor(soup)
+                        except Exception as e:
+                            print(f"Error applying extension {ext_name}: {e}")
 
             return str(soup)
     except Exception as e:
@@ -110,6 +128,11 @@ def create_book(title):
             'line_spacing': 1.5,
             'theme': 'light'
         },
+        'planning': {
+            'notes': [],
+            'characters': [],
+            'timeline': []
+        },
         'last_modified': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     }
 
@@ -122,12 +145,18 @@ def create_book(title):
 # Get a book by ID
 def get_book(book_id):
     try:
-        base_path = 'books'
-        fullpath = os.path.normpath(os.path.join(base_path, f"{book_id}.json"))
-        if not fullpath.startswith(base_path):
-            raise Exception("Invalid book ID")
-        with open(fullpath, 'r') as f:
-            return json.load(f)
+        with open(os.path.join('books', f"{book_id}.json"), 'r') as f:
+            book = json.load(f)
+
+            # Ensure planning structure exists for backward compatibility
+            if 'planning' not in book:
+                book['planning'] = {
+                    'notes': [],
+                    'characters': [],
+                    'timeline': []
+                }
+
+            return book
     except:
         return None
 
@@ -135,11 +164,7 @@ def get_book(book_id):
 # Save a book
 def save_book(book):
     book['last_modified'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    base_path = 'books'
-    fullpath = os.path.normpath(os.path.join(base_path, f"{book['id']}.json"))
-    if not fullpath.startswith(base_path):
-        raise Exception("Invalid book ID")
-    with open(fullpath, 'w') as f:
+    with open(os.path.join('books', f"{book['id']}.json"), 'w') as f:
         json.dump(book, f, indent=4)
 
 
@@ -148,7 +173,7 @@ def save_book(book):
 def index():
     books = get_books()
     extensions = load_extensions()
-    return render_template('index.html', books=books, extensions=extensions)
+    return render_template('index.html', books=books, extensions=extensions, active_extensions=active_extensions)
 
 
 @app.route('/book/new', methods=['POST'])
@@ -165,7 +190,22 @@ def edit_book(book_id):
         return redirect(url_for('index'))
 
     extensions = load_extensions()
-    html = render_template('edit.html', book=book, extensions=extensions)
+    html = render_template('edit.html', book=book, extensions=extensions, active_extensions=active_extensions)
+
+    # Apply extensions to the HTML
+    modified_html = apply_extensions(html)
+
+    return modified_html
+
+
+@app.route('/book/<book_id>/planning')
+def book_planning(book_id):
+    book = get_book(book_id)
+    if not book:
+        return redirect(url_for('index'))
+
+    extensions = load_extensions()
+    html = render_template('planning.html', book=book, extensions=extensions, active_extensions=active_extensions)
 
     # Apply extensions to the HTML
     modified_html = apply_extensions(html)
@@ -247,18 +287,12 @@ def api_delete_chapter(book_id, chapter_id):
 
 @app.route('/api/book/<book_id>/export/<format>')
 def export_book(book_id, format):
-    allowed_formats = {'json', 'txt', 'html', 'pdf'}
-    if format not in allowed_formats:
-        return jsonify({'error': 'Invalid format'}), 400
     book = get_book(book_id)
     if not book:
         return jsonify({'error': 'Book not found'}), 404
 
-    base_temp_dir = tempfile.gettempdir()
     filename = f"{book['title'].replace(' ', '_')}.{format}"
-    temp_filename = os.path.normpath(os.path.join(base_temp_dir, f"temp_{filename}"))
-    if not temp_filename.startswith(base_temp_dir):
-        return jsonify({'error': 'Invalid file path'}), 400
+    temp_filename = f"temp_{filename}"
 
     try:
         if format == 'json':
@@ -371,96 +405,18 @@ def activate_extension():
         extension_name = request.json.get('name')
         active = request.json.get('active', False)
 
-        extensions = load_extensions()
+        # Update active extensions
+        global active_extensions
+        active_extensions[extension_name] = active
 
-        if active:
-            if extension_name in extensions:
-                active_extensions[extension_name] = extensions[extension_name]
-        else:
-            if extension_name in active_extensions:
-                del active_extensions[extension_name]
+        # Save active extensions to a file
+        save_active_extensions(active_extensions)
 
         return jsonify({'success': True})
     except Exception as e:
         print(f"Error activating extension: {e}")
         return jsonify({'error': str(e)}), 500
 
-
-@app.route('/api/extensions/pdf-export/generate', methods=['POST'])
-def generate_pdf_export():
-    try:
-        # Get request data
-        options = request.json
-        if not options or 'bookId' not in options:
-            return jsonify({'error': 'Invalid request data. Book ID is required.'}), 400
-
-        book_id = options.get('bookId')
-
-        # Get the book data
-        book = get_book(book_id)
-        if not book:
-            return jsonify({'error': 'Book not found'}), 404
-
-        # Load PDF export extension
-        try:
-            # Check if pdf_export.py exists
-            pdf_extension_path = os.path.join('extensions', 'pdf-export-extension.py')
-            if not os.path.exists(pdf_extension_path):
-                return jsonify({'error': 'PDF export extension not found. Please make sure pdf_export.py is in the extensions directory.'}), 404
-
-            # Load the extension module
-            spec = importlib.util.spec_from_file_location('pdf_export', pdf_extension_path)
-            pdf_extension = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(pdf_extension)
-
-            # Check if generate_pdf function exists
-            if not hasattr(pdf_extension, 'generate_pdf'):
-                return jsonify({'error': 'PDF extension is missing the generate_pdf function'}), 500
-
-        except Exception as e:
-            print(f"Error loading PDF extension: {e}")
-            return jsonify({'error': f'Failed to load PDF extension: {str(e)}'}), 500
-
-        # Generate the PDF
-        try:
-            pdf_path = pdf_extension.generate_pdf(book, options)
-
-            if not pdf_path or not os.path.exists(pdf_path):
-                return jsonify({'error': 'Failed to generate PDF file'}), 500
-
-            # Return the PDF file
-            response = send_file(
-                pdf_path,
-                as_attachment=True,
-                download_name=f"{book['title'].replace(' ', '_')}.pdf",
-                mimetype='application/pdf'
-            )
-
-            # Clean up the temporary file after sending
-            @response.call_on_close
-            def cleanup():
-                try:
-                    if os.path.exists(pdf_path):
-                        os.remove(pdf_path)
-                except Exception as e:
-                    print(f"Error cleaning up temporary PDF: {e}")
-
-            return response
-
-        except ImportError as e:
-            # Handle missing dependencies specifically
-            print(f"PDF generation dependency error: {e}")
-            return jsonify({'error': f'Missing dependency: {str(e)}. Please install required packages: pip install reportlab beautifulsoup4'}), 500
-
-        except Exception as e:
-            # Handle other generation errors
-            print(f"PDF generation error: {e}")
-            return jsonify({'error': f'Error during PDF generation: {str(e)}'}), 500
-
-    except Exception as e:
-        # Handle all other errors
-        print(f"Unexpected error in PDF generation endpoint: {e}")
-        return jsonify({'error': f'Unexpected error: {str(e)}'}), 500
 
 if __name__ == '__main__':
     print("Starting Flask application...")
