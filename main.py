@@ -122,7 +122,11 @@ def create_book(title):
 # Get a book by ID
 def get_book(book_id):
     try:
-        with open(os.path.join('books', f"{book_id}.json"), 'r') as f:
+        base_path = 'books'
+        fullpath = os.path.normpath(os.path.join(base_path, f"{book_id}.json"))
+        if not fullpath.startswith(base_path):
+            raise Exception("Invalid book ID")
+        with open(fullpath, 'r') as f:
             return json.load(f)
     except:
         return None
@@ -131,7 +135,11 @@ def get_book(book_id):
 # Save a book
 def save_book(book):
     book['last_modified'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    with open(os.path.join('books', f"{book['id']}.json"), 'w') as f:
+    base_path = 'books'
+    fullpath = os.path.normpath(os.path.join(base_path, f"{book['id']}.json"))
+    if not fullpath.startswith(base_path):
+        raise Exception("Invalid book ID")
+    with open(fullpath, 'w') as f:
         json.dump(book, f, indent=4)
 
 
