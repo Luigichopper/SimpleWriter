@@ -1,0 +1,5 @@
+# Ignore batch files
+*.bat
+
+# Ignore shell scripts
+*.sh
